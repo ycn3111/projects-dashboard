@@ -410,7 +410,13 @@ btnGoogle.onclick = async () => {
   if(!supabase){ alert('Please save Supabase URL + key and reload.'); return; }
   // Make sure you enabled Google provider in Supabase Auth -> Providers
   const redirectTo = window.location.origin + '/';
-  await supabase.auth.signInWithOAuth({ provider: 'google', options: { redirectTo } });
+  await supabase.auth.signInWithOAuth({
+  provider: 'google',
+  options: {
+    redirectTo: redirectURL
+  }
+});
+
 };
 
 /* -------------------------
@@ -808,3 +814,4 @@ create table if not exists public.projects (
 </script>
 </body>
 </html>
+
