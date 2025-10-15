@@ -1,0 +1,810 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>My Gamma Workspace — Global</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+
+<style>
+  :root{
+    --bg1:#e0f0ff; --bg2:#fdfbff;
+    --card:#ffffff; --muted:#6b7280; --accent:#005cff;
+    --dark-bg:#0b1220; --dark-card:#0f1720; --dark-muted:#9aa4b2;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;font-family:'Poppins',sans-serif}
+  html,body{height:100%}
+  body{
+    background: linear-gradient(135deg,var(--bg1),var(--bg2));
+    min-height:100vh;color:#0b1220;display:flex;flex-direction:column;
+  }
+  header{
+    display:flex;align-items:center;justify-content:space-between;
+    padding:18px 28px;background:rgba(255,255,255,0.7);backdrop-filter:blur(8px);
+    border-bottom:1px solid rgba(0,0,0,0.06);
+  }
+  .brand{display:flex;align-items:center;gap:14px}
+  .logo{
+    width:44px;height:44px;border-radius:10px;background:linear-gradient(135deg,#3aa0ff,#005cff);
+    display:flex;align-items:center;justify-content:center;color:white;font-weight:700;
+    box-shadow:0 6px 20px rgba(0,92,255,0.18);
+  }
+  h1{font-size:18px;color:var(--accent);font-weight:700}
+  .controls{display:flex;align-items:center;gap:10px}
+
+  input.api {
+    padding:8px 10px;border-radius:8px;border:1px solid #ddd;width:300px;outline:none;
+    background:rgba(255,255,255,0.95);
+  }
+  .small-btn{
+    padding:8px 12px;border-radius:8px;border:none;background:var(--accent);
+    color:white;font-weight:600;cursor:pointer;
+  }
+  .ghost{background:transparent;color:var(--accent);border:1px solid rgba(0,92,255,0.12)}
+
+  main{flex:1;padding:28px;display:flex;gap:28px;align-items:flex-start}
+  .left{width:320px}
+  .right{flex:1;min-height:60vh}
+
+  .card{background:var(--card);border-radius:12px;padding:16px;box-shadow:0 8px 30px rgba(20,20,50,0.06)}
+  .folder-list{display:flex;flex-direction:column;gap:12px;margin-top:12px}
+  .folder-card{padding:12px;border-radius:10px;border:1px solid rgba(0,0,0,0.05);cursor:pointer;display:flex;justify-content:space-between;align-items:center}
+  .folder-card h3{color:var(--accent);font-size:15px}
+  .create-folder{display:flex;gap:8px;margin-top:12px}
+  .toggle-row{display:flex;justify-content:space-between;align-items:center;margin-top:12px}
+
+  .project-list{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:16px;margin-top:16px}
+  .project-card{padding:12px;border-radius:12px;background:var(--card);box-shadow:0 8px 24px rgba(12,18,30,0.06)}
+  .project-card h4{color:var(--accent);margin-bottom:8px}
+  .project-card p{color:var(--muted);font-size:13px}
+
+  /* AI generator */
+  .ai-area{display:flex;flex-direction:column;gap:10px}
+  textarea#ai-prompt{width:100%;min-height:120px;padding:12px;border-radius:10px;border:1px solid #ddd;resize:vertical}
+  .generate-row{display:flex;gap:10px;align-items:center}
+  .output{margin-top:14px;padding:14px;border-radius:12px;background:var(--card);box-shadow:0 6px 20px rgba(10,20,40,0.04)}
+  .page-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px;margin-top:12px}
+  .page-card{background:var(--card);padding:12px;border-radius:10px}
+  .page-card img{width:100%;height:140px;object-fit:cover;border-radius:8px;margin-bottom:8px}
+
+  /* auth overlay */
+  .auth-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.45);display:none;align-items:center;justify-content:center;z-index:50}
+  .auth-box{width:360px;padding:20px;border-radius:12px;background:linear-gradient(180deg,rgba(255,255,255,0.98),rgba(255,255,255,0.95));box-shadow:0 18px 50px rgba(10,20,40,0.25)}
+  .auth-box h2{text-align:center;margin-bottom:12px;color:var(--accent)}
+  .auth-box input{width:100%;padding:10px;margin:8px 0;border-radius:8px;border:1px solid #ddd}
+  .social-row{display:flex;gap:8px;margin-top:8px}
+
+  /* dark */
+  body.dark{background:linear-gradient(135deg,#071023,#0b1220);color:#cbd5e1}
+  body.dark header{background:rgba(7,16,36,0.6);border-bottom:1px solid rgba(255,255,255,0.03)}
+  body.dark .card{background:var(--dark-card);box-shadow:none}
+  body.dark .project-card, body.dark .page-card{background:linear-gradient(180deg,#071527,#0d1b2a)}
+  body.dark .folder-card{border:1px solid rgba(255,255,255,0.03)}
+  body.dark input.api{background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);color:#cbd5e1}
+
+  footer{padding:12px 28px;text-align:center;color:var(--muted);font-size:13px}
+  @media (max-width:900px){main{flex-direction:column} .left{width:100%} .right{width:100%}}
+</style>
+</head>
+
+<body>
+  <header>
+    <div class="brand">
+      <div class="logo">G</div>
+      <div>
+        <h1>My Gamma Workspace</h1>
+        <div style="font-size:12px;color:#6b7280">AI projects • global accounts • share with classmates</div>
+      </div>
+    </div>
+
+    <div class="controls">
+      <input id="api-key-input" class="api" placeholder="Paste OpenRouter/OpenAI API key (stored locally)"/>
+      <button id="save-api" class="small-btn">Save Key</button>
+      <button id="dark-toggle" class="ghost">Dark</button>
+      <div id="user-area"></div>
+    </div>
+  </header>
+
+  <main>
+    <div class="left">
+      <div class="card">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <strong>Your Folders</strong>
+          <button id="open-auth" class="small-btn">Login / Account</button>
+        </div>
+
+        <div class="folder-list" id="folder-list">
+          <!-- dynamic folders -->
+        </div>
+
+        <div class="create-folder">
+          <input id="new-folder-name" placeholder="New folder name" style="flex:1;padding:10px;border-radius:8px;border:1px solid #ddd"/>
+          <button id="create-folder-btn" class="small-btn">Create</button>
+        </div>
+
+        <div class="toggle-row">
+          <div style="font-size:13px;color:var(--muted)">Auto-save to cloud</div>
+          <label style="display:flex;align-items:center;gap:8px">
+            <input id="auto-save" type="checkbox" />
+            <span style="font-size:13px;color:var(--muted)">ON</span>
+          </label>
+        </div>
+      </div>
+
+      <div style="height:16px"></div>
+
+      <div class="card">
+        <strong>Stored Keys (local)</strong>
+        <div style="margin-top:8px;font-size:13px;color:var(--muted)">
+          API key is stored only in your browser localStorage — not sent anywhere by this file.
+        </div>
+        <div style="margin-top:10px;display:flex;gap:8px">
+          <input id="supabase-url" placeholder="Supabase URL (paste & save)" style="flex:1;padding:8px;border-radius:8px;border:1px solid #ddd"/>
+        </div>
+        <div style="margin-top:8px;display:flex;gap:8px">
+          <input id="supabase-key" placeholder="Supabase anon public key" style="flex:1;padding:8px;border-radius:8px;border:1px solid #ddd"/>
+          <button id="save-sb" class="small-btn">Save</button>
+        </div>
+
+        <div style="margin-top:10px;font-size:12px;color:var(--muted)">
+          After saving Supabase values, reload the page. <br>
+          (We keep them in your browser for safety.)
+        </div>
+      </div>
+    </div>
+
+    <div class="right">
+      <div class="card">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <div>
+            <strong>AI Project Creator</strong>
+            <div style="font-size:13px;color:var(--muted)">Write a prompt and create an 8-page project (text + images)</div>
+          </div>
+          <div style="font-size:13px;color:var(--muted)">Model: GPT-style (via your key)</div>
+        </div>
+
+        <div class="ai-area" style="margin-top:12px">
+          <input id="project-title" placeholder="Project title (e.g. 'Solar Car')" style="padding:10px;border-radius:8px;border:1px solid #ddd"/>
+          <textarea id="ai-prompt" placeholder="Tell the AI what to create (audience, tone, extra requirements)"></textarea>
+
+          <div class="generate-row">
+            <button id="generate-btn" class="small-btn">Generate 8-page Project</button>
+            <button id="save-project-btn" class="small-btn ghost" disabled>Save project to cloud</button>
+            <div style="margin-left:auto;color:var(--muted);font-size:13px">Images provided via Unsplash source</div>
+          </div>
+
+          <div id="ai-output" class="output" style="display:none"></div>
+        </div>
+      </div>
+
+      <div style="height:16px"></div>
+
+      <div class="card" id="projects-card" style="margin-top:12px;">
+        <strong>Your Projects</strong>
+        <div id="project-list" class="project-list"></div>
+      </div>
+    </div>
+  </main>
+
+  <footer>Built with ❤️ • Save your Supabase keys locally • Use Google OAuth in Supabase settings</footer>
+
+  <!-- Auth modal -->
+  <div class="auth-overlay" id="auth-overlay">
+    <div class="auth-box card">
+      <h2>Sign in / Sign up</h2>
+      <input id="auth-email" placeholder="Email" />
+      <input id="auth-password" placeholder="Password" type="password"/>
+      <div style="display:flex;gap:8px;margin-top:8px">
+        <button id="btn-email-signin" class="small-btn" style="flex:1">Sign in</button>
+        <button id="btn-email-signup" class="small-btn ghost" style="flex:1">Sign up</button>
+      </div>
+      <div class="social-row" style="margin-top:10px">
+        <button id="btn-google" class="small-btn" style="flex:1;background:#ea4335">Sign in with Google</button>
+      </div>
+      <div style="margin-top:10px;text-align:center">
+        <button id="close-auth" class="ghost">Close</button>
+      </div>
+    </div>
+  </div>
+
+<script type="module">
+/* ============================================================
+   SINGLE-FILE APP: Supabase + AI project generator
+   IMPORTANT: Replace placeholders _______ before first use:
+   - Save Supabase URL & anon key using the UI inputs (safer)
+   - Save your OpenRouter/OpenAI key in the API input and click Save
+   ============================================================ */
+
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+
+/* -------------------------
+   Util helpers
+   ------------------------- */
+const $ = sel => document.querySelector(sel);
+const $$ = sel => Array.from(document.querySelectorAll(sel));
+
+/* -------------------------
+   Local storage keys
+   ------------------------- */
+const LS = {
+  SUPABASE_URL: 'sg_supabase_url',
+  SUPABASE_KEY: 'sg_supabase_key',
+  API_KEY: 'sg_ai_api_key',
+  DARK: 'sg_dark_mode',
+  AUTO_SAVE: 'sg_auto_save'
+};
+
+/* -------------------------
+   Elements
+   ------------------------- */
+const apiInput = $('#api-key-input');
+const saveApiBtn = $('#save-api');
+const darkToggle = $('#dark-toggle');
+const userArea = $('#user-area');
+
+const supabaseUrlInput = $('#supabase-url');
+const supabaseKeyInput = $('#supabase-key');
+const saveSupabaseBtn = $('#save-sb');
+const openAuthBtn = $('#open-auth');
+
+const authOverlay = $('#auth-overlay');
+const btnCloseAuth = $('#close-auth');
+const btnEmailSignin = $('#btn-email-signin');
+const btnEmailSignup = $('#btn-email-signup');
+const btnGoogle = $('#btn-google');
+
+const folderList = $('#folder-list');
+const createFolderBtn = $('#create-folder-btn');
+const newFolderName = $('#new-folder-name');
+const autoSaveCheckbox = $('#auto-save');
+
+const generateBtn = $('#generate-btn');
+const saveProjectBtn = $('#save-project-btn');
+const aiPrompt = $('#ai-prompt');
+const projectTitleInput = $('#project-title');
+const aiOutput = $('#ai-output');
+const projectList = $('#project-list');
+
+/* -------------------------
+   Load saved UI keys
+   ------------------------- */
+function loadLocalSettings(){
+  const sbUrl = localStorage.getItem(LS.SUPABASE_URL) || '';
+  const sbKey = localStorage.getItem(LS.SUPABASE_KEY) || '';
+  const apiKey = localStorage.getItem(LS.API_KEY) || '';
+
+  supabaseUrlInput.value = sbUrl;
+  supabaseKeyInput.value = sbKey;
+  apiInput.value = apiKey;
+
+  const dark = localStorage.getItem(LS.DARK) === '1';
+  if(dark) document.body.classList.add('dark');
+
+  const autos = localStorage.getItem(LS.AUTO_SAVE) === '1';
+  autoSaveCheckbox.checked = autos;
+}
+loadLocalSettings();
+
+/* -------------------------
+   Supabase client (initially null)
+   ------------------------- */
+let supabase = null;
+let currentUser = null;
+let currentFolder = null;
+let lastGenerated = null; // holds last AI output (object)
+
+/* -------------------------
+   Initialize Supabase client if keys are present
+   ------------------------- */
+function initSupabaseFromInputs(){
+  const url = supabaseUrlInput.value.trim();
+  const key = supabaseKeyInput.value.trim();
+  if(url && key){
+    try {
+      supabase = createClient(url, key);
+      // try to load user
+      supabase.auth.getUser().then(res => {
+        currentUser = res?.data?.user || null;
+        updateUserArea();
+        if(currentUser) loadFolders();
+      }).catch(e=>{ console.log('supabase.getUser error',e) });
+    } catch(e){
+      console.error('Failed to init supabase', e);
+    }
+  }
+}
+initSupabaseFromInputs();
+
+/* -------------------------
+   Save supabase values locally (UI)
+   ------------------------- */
+saveSupabaseBtn.onclick = () => {
+  const url = supabaseUrlInput.value.trim();
+  const key = supabaseKeyInput.value.trim();
+  if(!url || !key){ alert('Please paste Supabase URL and anon key.'); return; }
+  localStorage.setItem(LS.SUPABASE_URL, url);
+  localStorage.setItem(LS.SUPABASE_KEY, key);
+  alert('Supabase info saved locally. Reload the page for full initialization.');
+  // initialize now too
+  initSupabaseFromInputs();
+};
+
+/* -------------------------
+   API key save
+   ------------------------- */
+saveApiBtn.onclick = () => {
+  const k = apiInput.value.trim();
+  if(!k){ alert('Paste your OpenRouter/OpenAI key in the input first.'); return; }
+  localStorage.setItem(LS.API_KEY, k);
+  alert('API key saved locally (only in your browser).');
+};
+
+/* -------------------------
+   Dark mode toggle
+   ------------------------- */
+darkToggle.onclick = () => {
+  document.body.classList.toggle('dark');
+  localStorage.setItem(LS.DARK, document.body.classList.contains('dark') ? '1' : '0');
+};
+
+/* -------------------------
+   Auth UI
+   ------------------------- */
+openAuthBtn.onclick = () => authOverlay.style.display = 'flex';
+btnCloseAuth.onclick = () => authOverlay.style.display = 'none';
+
+async function updateUserArea(){
+  userArea.innerHTML = '';
+  if(!supabase) return;
+  const { data } = await supabase.auth.getUser();
+  currentUser = data?.user || null;
+  if(currentUser){
+    const name = currentUser.email || currentUser.user_metadata?.name || 'User';
+    const el = document.createElement('div');
+    el.innerHTML = `<span style="margin-right:10px;color:var(--muted)">${name}</span>
+      <button id="btn-logout" class="small-btn ghost">Logout</button>`;
+    userArea.appendChild(el);
+    $('#btn-logout').onclick = async () => {
+      await supabase.auth.signOut();
+      location.reload();
+    };
+  } else {
+    const b = document.createElement('button');
+    b.textContent = 'Login';
+    b.className = 'small-btn';
+    b.onclick = () => authOverlay.style.display = 'flex';
+    userArea.appendChild(b);
+  }
+}
+updateUserArea();
+
+/* -------------------------
+   Auth actions
+   ------------------------- */
+btnEmailSignin.onclick = async () => {
+  if(!supabase){ alert('Please save Supabase URL + key and reload.'); return; }
+  const email = $('#auth-email').value.trim();
+  const password = $('#auth-password').value;
+  if(!email || !password) { alert('Provide email and password'); return; }
+  const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+  if(error){
+    alert('Sign in error: ' + error.message);
+  } else {
+    authOverlay.style.display = 'none';
+    await updateUserArea();
+    loadFolders();
+  }
+};
+
+btnEmailSignup.onclick = async () => {
+  if(!supabase){ alert('Please save Supabase URL + key and reload.'); return; }
+  const email = $('#auth-email').value.trim();
+  const password = $('#auth-password').value;
+  if(!email || !password) { alert('Provide email and password'); return; }
+  const { data, error } = await supabase.auth.signUp({ email, password });
+  if(error){ alert('Sign up error: ' + error.message); return; }
+  alert('Account created! Check email for confirmation if required.');
+};
+
+btnGoogle.onclick = async () => {
+  if(!supabase){ alert('Please save Supabase URL + key and reload.'); return; }
+  // Make sure you enabled Google provider in Supabase Auth -> Providers
+  const redirectTo = window.location.origin + '/';
+  await supabase.auth.signInWithOAuth({ provider: 'google', options: { redirectTo } });
+};
+
+/* -------------------------
+   Folder & Project methods
+   ------------------------- */
+async function loadFolders(){
+  if(!supabase) return;
+  const userRes = await supabase.auth.getUser();
+  const user = userRes?.data?.user;
+  if(!user) { folderList.innerHTML = '<div style="color:var(--muted)">Please sign in to see folders</div>'; return; }
+  // assumes table 'folders' exists with columns: id(uuid), user_id(text), name(text)
+  const { data, error } = await supabase.from('folders').select('*').eq('user_id', user.id).order('created_at', {ascending:false});
+  if(error){ console.error(error); folderList.innerHTML = '<div style="color:var(--muted)">Failed to load folders</div>'; return; }
+  folderList.innerHTML = '';
+  if(!data || data.length===0) folderList.innerHTML = '<div style="color:var(--muted)">No folders yet — create one</div>';
+  data.forEach(f=>{
+    const el = document.createElement('div');
+    el.className = 'folder-card';
+    el.innerHTML = `<div><h3>${escapeHtml(f.name)}</h3><div style="font-size:12px;color:var(--muted)">id: ${f.id?.substring(0,6) || ''}</div></div>
+      <div><button class="small-btn" data-id="${f.id}">Open</button></div>`;
+    folderList.appendChild(el);
+    el.querySelector('button').onclick = () => openFolder(f);
+  });
+  // load projects list as well
+  loadAllProjectsForUser();
+}
+
+createFolderBtn.onclick = async () => {
+  if(!supabase){ alert('Save Supabase details first'); return; }
+  const name = newFolderName.value.trim();
+  if(!name) return alert('Enter a folder name');
+  const { data: userData } = await supabase.auth.getUser();
+  const user = userData?.user;
+  if(!user) return alert('Sign in first');
+  const res = await supabase.from('folders').insert([{ user_id: user.id, name }]).select().single();
+  if(res.error){ alert('Error creating folder: '+res.error.message); return; }
+  newFolderName.value = '';
+  loadFolders();
+};
+
+async function openFolder(folder){
+  currentFolder = folder;
+  // show projects for that folder in projects card
+  const { data, error } = await supabase.from('projects').select('*').eq('folder_id', folder.id).order('created_at',{ascending:false});
+  if(error){ console.error(error); alert('Failed to load projects'); return; }
+  // highlight selection (simple)
+  $$('.folder-card').forEach(c=>c.style.borderColor='rgba(0,0,0,0.05)');
+  // show folder name top of projects card
+  $('#projects-card strong').textContent = `Projects — ${folder.name}`;
+  // render
+  renderProjects(data || []);
+}
+
+/* Render projects in project-list element */
+function renderProjects(list){
+  projectList.innerHTML = '';
+  if(!list || list.length===0){ projectList.innerHTML = '<div style="color:var(--muted)">No projects in this folder</div>'; return; }
+  list.forEach(p=>{
+    const d = document.createElement('div');
+    d.className = 'project-card card';
+    d.innerHTML = `<h4>${escapeHtml(p.title)}</h4><p>${escapeHtml((p.content||'').substring(0,200))}...</p>
+      <div style="display:flex;gap:8px;margin-top:8px">
+        <button class="small-btn btn-open" data-id="${p.id}">Open</button>
+        <button class="small-btn ghost btn-download" data-id="${p.id}">Download</button>
+      </div>`;
+    projectList.appendChild(d);
+    d.querySelector('.btn-open').onclick = () => openProject(p);
+    d.querySelector('.btn-download').onclick = () => downloadProject(p);
+  });
+}
+
+/* Load all user's projects (for overview) */
+async function loadAllProjectsForUser(){
+  if(!supabase) return;
+  const { data: userData } = await supabase.auth.getUser();
+  const user = userData?.user;
+  if(!user) return;
+  const { data, error } = await supabase.from('projects').select('*').eq('user_id', user.id).order('created_at',{ascending:false});
+  if(error) console.error(error);
+  // optionally render a summary somewhere (we'll not duplicate)
+}
+
+/* Open a saved project and render pages if possible */
+async function openProject(p){
+  if(!p) return;
+  // content stored as JSON or plain text; we'll try to parse
+  let payload = p.content;
+  try{ payload = JSON.parse(p.content); }catch(e){ /* leave as text */ }
+  showGeneratedProject(payload, p.title);
+}
+
+/* Download project as JSON file */
+function downloadProject(p){
+  const blob = new Blob([JSON.stringify(p, null, 2)], {type: 'application/json'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = `${p.title || 'project'}.json`;
+  document.body.appendChild(a); a.click(); a.remove();
+  URL.revokeObjectURL(url);
+}
+
+/* -------------------------
+   AI generation: create 8 pages with image prompts
+   - We will ask the LLM to return a JSON structure for easier parsing.
+   - For images we will generate an Unsplash source URL using the prompt text.
+   ------------------------- */
+generateBtn.onclick = async () => {
+  const title = projectTitleInput.value.trim();
+  const promptUser = aiPrompt.value.trim();
+  if(!title) return alert('Please enter a project title');
+  if(!promptUser) return alert('Please explain what you want the AI to create');
+
+  // get API key from localStorage
+  const apiKey = localStorage.getItem(LS.API_KEY) || apiInput.value.trim();
+  if(!apiKey) return alert('Please paste your OpenRouter/OpenAI key in the header input and click Save');
+
+  aiOutput.style.display = 'block';
+  aiOutput.textContent = '⏳ Generating project (this can take a few seconds)...';
+
+  // Compose a clear system/user prompt that requests JSON output
+  const system = "You are an assistant that outputs a JSON array of 8 pages. Each page must have: title, text (short paragraph 2-4 sentences), and an image_prompt (a short phrase to use to fetch an image). Output ONLY valid JSON.";
+  const user = `Create an 8-page project for the topic "${title}". Requirements: audience = general, style = clear & slightly formal, include 8 sections (pages) each with a title, a short paragraph (2-4 sentences), and a concise image prompt (few words). Return as JSON: { "pages":[ { "title":"", "text":"", "image_prompt":"" }, ... ] }`;
+
+  try {
+    // Call OpenRouter first; if it fails, fall back to OpenAI endpoint
+    let chatResp = null;
+    // Try OpenRouter endpoint
+    chatResp = await callOpenRouterChat(apiKey, [{role:'system', content: system},{role:'user', content:user}]);
+    if(!chatResp || !chatResp.content){
+      // fallback to OpenAI
+      chatResp = await callOpenAIChat(apiKey, [{role:'system', content: system},{role:'user', content:user}]);
+    }
+    const raw = chatResp.content;
+    // Attempt to extract JSON from the content (sometimes models add backticks)
+    const jsonText = extractJson(raw);
+    let parsed = null;
+    try { parsed = JSON.parse(jsonText); }
+    catch(err){ 
+      // fallback: try to parse by finding the first '[' or '{'
+      const start = jsonText.indexOf('{');
+      if(start>=0) parsed = JSON.parse(jsonText.slice(start)); 
+      else throw new Error('Failed to parse AI JSON output');
+    }
+    // Expect parsed.pages array
+    const pages = parsed.pages || parsed;
+    if(!pages || !Array.isArray(pages) || pages.length===0) throw new Error('AI returned invalid pages');
+
+    // Convert pages to include image URLs (using Unsplash Source)
+    const pagesWithImages = pages.map(pg=>{
+      const prompt = (pg.image_prompt || pg.title || '').split('\n')[0];
+      // create an Unsplash source url (no API key)
+      const imgUrl = `https://source.unsplash.com/featured/?${encodeURIComponent(prompt)}`;
+      return {
+        title: pg.title || '',
+        text: pg.text || '',
+        image_prompt: prompt,
+        image_url: imgUrl
+      };
+    });
+
+    // render generated project in UI
+    lastGenerated = { title, pages: pagesWithImages, created_at: new Date().toISOString() };
+    showGeneratedProject(lastGenerated, title);
+    aiOutput.textContent = '✅ Generated. You can save this project to cloud (or download).';
+    saveProjectBtn.disabled = false;
+
+    // auto-save to cloud if enabled
+    if(autoSaveCheckbox.checked) {
+      await saveGeneratedProjectToCloud(lastGenerated, title);
+      aiOutput.textContent += ' • Saved to cloud.';
+    }
+  } catch(err){
+    console.error(err);
+    aiOutput.textContent = '⚠️ Error generating project: ' + (err.message || err);
+  }
+};
+
+/* Helper: show generated project pages in UI */
+function showGeneratedProject(payload, title){
+  aiOutput.innerHTML = '';
+  const header = document.createElement('div');
+  header.innerHTML = `<strong style="font-size:16px">${escapeHtml(title || payload.title || 'Generated Project')}</strong>
+    <div style="color:var(--muted);font-size:13px;margin-top:6px">Pages: ${(payload.pages||[]).length}</div>`;
+  aiOutput.appendChild(header);
+
+  const grid = document.createElement('div');
+  grid.className = 'page-grid';
+  (payload.pages || []).forEach((pg, idx)=>{
+    const card = document.createElement('div');
+    card.className = 'page-card';
+    const img = document.createElement('img');
+    img.src = pg.image_url;
+    img.alt = pg.image_prompt || 'image';
+    const t = document.createElement('div');
+    t.innerHTML = `<strong>Page ${idx+1}: ${escapeHtml(pg.title)}</strong>
+      <p style="color:var(--muted);font-size:13px">${escapeHtml(pg.text)}</p>
+      <div style="font-size:12px;color:var(--muted)">Prompt: ${escapeHtml(pg.image_prompt)}</div>`;
+    card.appendChild(img);
+    card.appendChild(t);
+    grid.appendChild(card);
+  });
+  aiOutput.appendChild(grid);
+
+  // enable download of generated JSON
+  const dl = document.createElement('button');
+  dl.className = 'small-btn ghost';
+  dl.style.marginTop = '12px';
+  dl.textContent = 'Download JSON';
+  dl.onclick = ()=> {
+    const blob = new Blob([JSON.stringify(payload, null, 2)], {type:'application/json'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = `${(title||'project').replace(/\s+/g,'_')}.json`;
+    document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url);
+  };
+  aiOutput.appendChild(dl);
+}
+
+/* Save lastGenerated to Supabase projects table */
+async function saveGeneratedProjectToCloud(payload, title){
+  if(!supabase) return alert('Supabase not initialized: save keys then reload page.');
+  const { data: ud } = await supabase.auth.getUser();
+  const user = ud?.user;
+  if(!user) return alert('You must be signed in to save projects.');
+  if(!currentFolder) {
+    // create a default folder automatically
+    const tempName = 'My AI Projects';
+    const resFolder = await supabase.from('folders').insert([{ user_id: user.id, name: tempName }]).select().single();
+    currentFolder = resFolder.data;
+    loadFolders();
+  }
+  const insert = {
+    folder_id: currentFolder.id,
+    user_id: user.id,
+    title: title || payload.title || 'AI Project',
+    content: JSON.stringify(payload),
+    created_at: new Date().toISOString()
+  };
+  const { error } = await supabase.from('projects').insert([insert]);
+  if(error) { console.error(error); alert('Failed to save project: '+error.message); return; }
+  alert('Project saved to cloud!');
+  loadFolders();
+}
+
+/* Save project button */
+saveProjectBtn.onclick = async () => {
+  if(!lastGenerated) return alert('No generated project to save.');
+  const title = lastGenerated.title || projectTitleInput.value || 'AI Project';
+  await saveGeneratedProjectToCloud(lastGenerated, title);
+};
+
+/* -------------------------
+   Utility: safe HTML escape
+   ------------------------- */
+function escapeHtml(s=''){ return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+
+/* -------------------------
+   AI call helpers (OpenRouter first, fallback to OpenAI)
+   - We return {content: string}
+   ------------------------- */
+async function callOpenRouterChat(key, messages){
+  try {
+    // OpenRouter example endpoint (may be updated in future)
+    const res = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+      method:'POST',
+      headers:{ 'Content-Type':'application/json', 'Authorization': `Bearer ${key}` },
+      body: JSON.stringify({
+        model: 'gpt-4o-mini',
+        messages: messages
+      })
+    });
+    if(!res.ok) throw new Error('OpenRouter error: '+res.status);
+    const j = await res.json();
+    const content = j.choices?.[0]?.message?.content || j.result || '';
+    return { content };
+  } catch(err){
+    console.warn('OpenRouter call failed:', err);
+    return null;
+  }
+}
+
+async function callOpenAIChat(key, messages){
+  try {
+    const res = await fetch('https://api.openai.com/v1/chat/completions', {
+      method:'POST',
+      headers:{ 'Content-Type':'application/json', 'Authorization': `Bearer ${key}` },
+      body: JSON.stringify({
+        model: 'gpt-4o-mini', // placeholder; OpenAI model name may vary; you can change to gpt-4o or gpt-4o-mini or gpt-3.5-turbo
+        messages: messages,
+        max_tokens: 1200
+      })
+    });
+    if(!res.ok) throw new Error('OpenAI error: '+res.status);
+    const j = await res.json();
+    const content = j.choices?.[0]?.message?.content || '';
+    return { content };
+  } catch(err){
+    console.warn('OpenAI call failed:', err);
+    return null;
+  }
+}
+
+/* -------------------------
+   Helper: extract JSON block from model output
+   ------------------------- */
+function extractJson(text){
+  if(!text) return '';
+  // Remove markdown fences and try to find first { or [ and last } or ]
+  let t = text.replace(/```json|```/gi,'').trim();
+  const start = t.indexOf('{');
+  const startArr = t.indexOf('[');
+  const s = (start>=0 && startArr>=0) ? Math.min(start,startArr) : Math.max(start,startArr);
+  if(s>=0) t = t.slice(s);
+  // try to find matching bracket end
+  // naive find last } or ]
+  const lastBrace = Math.max(t.lastIndexOf('}'), t.lastIndexOf(']'));
+  if(lastBrace>0) t = t.slice(0, lastBrace+1);
+  return t.trim();
+}
+
+/* -------------------------
+   Small helper: load projects (initial user view)
+   ------------------------- */
+async function loadProjectsForCurrentFolder(){
+  if(!supabase || !currentFolder) return;
+  const { data, error } = await supabase.from('projects').select('*').eq('folder_id', currentFolder.id).order('created_at',{ascending:false});
+  if(error){ console.error(error); return; }
+  renderProjects(data || []);
+}
+
+/* -------------------------
+   Open a folder quickly when clicking its Open button
+   ------------------------- */
+async function openFolderById(id){
+  if(!supabase) return;
+  const { data, error } = await supabase.from('folders').select('*').eq('id', id).single();
+  if(error){ console.error(error); return; }
+  openFolder(data);
+}
+
+/* -------------------------
+   small helper: open saved project (already above)
+   ------------------------- */
+
+/* -------------------------
+   escape HTML utility included above
+   ------------------------- */
+
+/* -------------------------
+   INITIAL UI hook ups
+   ------------------------- */
+openAuthBtn.onclick = () => { authOverlay.style.display = 'flex' };
+btnCloseAuth.onclick = () => { authOverlay.style.display = 'none' };
+
+createFolderBtn.onclick = createFolderBtn.onclick; // already assigned above (keeps behavior)
+
+autoSaveCheckbox.onchange = () => {
+  localStorage.setItem(LS.AUTO_SAVE, autoSaveCheckbox.checked ? '1' : '0');
+};
+
+/* If user is already logged in when page loads, show user area and folders */
+(async function initialLoad(){
+  // try to init from localStorage values if fields empty
+  if(!supabaseUrlInput.value && localStorage.getItem(LS.SUPABASE_URL)) supabaseUrlInput.value = localStorage.getItem(LS.SUPABASE_URL);
+  if(!supabaseKeyInput.value && localStorage.getItem(LS.SUPABASE_KEY)) supabaseKeyInput.value = localStorage.getItem(LS.SUPABASE_KEY);
+  if(!apiInput.value && localStorage.getItem(LS.API_KEY)) apiInput.value = localStorage.getItem(LS.API_KEY);
+  initSupabaseFromInputs();
+  await updateUserArea();
+  // show saved folders if logged in
+  const user = (await (supabase ? supabase.auth.getUser() : Promise.resolve({data:{user:null}}))).data.user;
+  if(user) loadFolders();
+})();
+
+/* -------------------------
+   Minimal SQL for Supabase (run in Supabase SQL editor)
+   -------------------------
+-- create folders table
+create table if not exists public.folders (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid not null,
+  name text,
+  created_at timestamp with time zone default now()
+);
+
+-- create projects table
+create table if not exists public.projects (
+  id uuid primary key default gen_random_uuid(),
+  folder_id uuid references public.folders(id) on delete cascade,
+  user_id uuid not null,
+  title text,
+  content text,
+  created_at timestamp with time zone default now()
+);
+   ------------------------- */
+</script>
+</body>
+</html>
